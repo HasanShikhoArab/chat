@@ -1,4 +1,5 @@
 import 'package:chat/Pages/chatapp.dart';
+import 'package:chat/cubit/cubits/chat_cubit.dart';
 import 'package:chat/cubit/cubits/login_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -32,7 +33,7 @@ class loginApp extends StatelessWidget {
 
           isloading=true;
         }else if(state is LoginSucces){
-
+BlocProvider.of<ChatCubit>(context).getmessage();
           Navigator.pushNamed(context,chat.id,arguments: email);
           isloading=false;
 

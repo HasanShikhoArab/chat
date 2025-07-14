@@ -1,7 +1,8 @@
-
+import 'package:chat/cubit/cubits/chat_cubit.dart';
 import 'package:chat/moudels/messagemodel.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../Constes.dart';
 import '../weights/chatbuble.dart';
 
@@ -16,14 +17,18 @@ class chat extends StatefulWidget {
 
 class _chatState extends State<chat> {
   final controller = ScrollController();
-  final TextEditingController contr = TextEditingController();
 
-  CollectionReference messages =
-  FirebaseFirestore.instance.collection(KmessageCollecation);
+  TextEditingController contr = TextEditingController();
+
+  get message => null;
 
   @override
   Widget build(BuildContext context) {
-    var email = ModalRoute.of(context)!.settings.arguments;
+    var email = ModalRoute
+        .of(context)!
+        .settings
+        .arguments;
+
 
     return Scaffold(
       appBar: AppBar(
@@ -33,38 +38,38 @@ class _chatState extends State<chat> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(Klogo, height: 40, width: 40),
-            SizedBox(width: 5),
-            Text('chat', style: TextStyle(color: Colors.white)),
+            Image.asset(
+              Klogo,
+              height: 40,
+              width: 40,
+            ),
+            SizedBox(
+              width: 5,
+            ),
+            Text(
+              'chat',
+              style: TextStyle(color: Colors.white),
+            )
           ],
         ),
       ),
       body: Column(
         children: [
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: messages.orderBy(kcreated).snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  List<Message> messageList = [];
-                  for (var doc in snapshot.data!.docs) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    messageList.add(Message.fromjson(data));
-                  }
+            child: BlocBuilder<ChatCubit, ChatState>(
+              builder: (context, state) {
+                var messagesList=BlocProvider.of<ChatCubit>(context).messagesList;
+                return ListView.builder(
 
-                  return ListView.builder(
-                    controller: controller,
-                    itemCount: messageList.length,
-                    itemBuilder: (context, index) {
-                      final isMe = messageList[index].id == email;
-                      return isMe
-                          ? chatbubble(message: messageList[index])
-                          : chatbubble2(message: messageList[index]);
-                    },
-                  );
-                } else {
-                  return Center(child: CircularProgressIndicator());
-                }
+
+                  controller: controller,
+                  itemCount: messagesList.length,
+                  itemBuilder: (context, index) {
+                    return messagesList[index].id == email ?
+                    chatbubble(message: messagesList[index],)
+                        : chatbubble2(message: messagesList[index]);
+                  },
+                );
               },
             ),
           ),
@@ -73,32 +78,30 @@ class _chatState extends State<chat> {
             child: TextField(
               controller: contr,
               onSubmitted: (value) {
-                if (value.trim().isNotEmpty) {
-                  messages.add({
-                    kmessage: value,
-                    kcreated: DateTime.now(),
-                    'id': email,
-                  });
-                  contr.clear();
-                  controller.animateTo(
-                    controller.position.maxScrollExtent,
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
-                }
+                BlocProvider.of<ChatCubit>(context).sendmessage(message: contr.text, email: email as String);
+                contr.clear();
+                controller.animateTo(controller.position.maxScrollExtent,
+                    duration: Duration(seconds: 3),
+                    curve: Curves.bounceInOut);
               },
               decoration: InputDecoration(
-                hintText: 'Enter message',
-                suffixIcon: Icon(Icons.send, color: kprimaryColor.shade700),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: kprimaryColor.shade700),
-                ),
-              ),
+                  hintText: 'Enter message',
+                  suffixIcon: Icon(
+                    Icons.send, color: kprimaryColor.shade700,),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                          color: kprimaryColor.shade700))),
             ),
-          ),
+          )
         ],
       ),
     );
   }
 }
+
+
+
+
+
+
