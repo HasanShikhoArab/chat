@@ -1,14 +1,15 @@
 import 'package:chat/Constes.dart';
 
-class Message{
-
-
+class Message {
   final String message;
-final String id;
-  Message(this.message,this.id);
+  final String id;
 
+  Message(this.message, this.id);
 
-  factory Message.fromjson(jsonData){
-    return Message(jsonData[kmessage],jsonData['id']);
+  factory Message.fromjson(Map<String, dynamic> jsonData) {
+    return Message(
+      jsonData[kmessage] ?? '', // يعالج لو القيمة null
+      jsonData['id'] ?? '',
+    );
   }
 }
